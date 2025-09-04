@@ -13,4 +13,8 @@ class CellLeader extends Model
     {
         return $this->morphMany(Member::class, 'leader');
     }
-}
+        public function attenders(): MorphMany
+        {
+            return $this->morphMany(Attender::class, 'leader');
+        }
+    }
