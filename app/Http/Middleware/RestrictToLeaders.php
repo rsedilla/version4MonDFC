@@ -13,6 +13,9 @@ class RestrictToLeaders
     public function handle($request, Closure $next)
     {
         $user = Auth::user();
+        if ($user->is_admin) {
+            return $next($request);
+        }
         $isNetworkLeader = NetworkLeader::where('user_id', $user->id)->exists();
         $isG12Leader = G12Leader::where('user_id', $user->id)->exists();
         $isSeniorPastor = SeniorPastor::where('user_id', $user->id)->exists();
