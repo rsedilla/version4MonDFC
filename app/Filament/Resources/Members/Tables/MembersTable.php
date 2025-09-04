@@ -15,9 +15,6 @@ class MembersTable
     {
         return $table
             ->columns([
-                TextColumn::make('leader_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('leader_type')
                     ->searchable(),
                 TextColumn::make('first_name')
@@ -26,16 +23,14 @@ class MembersTable
                     ->searchable(),
                 TextColumn::make('last_name')
                     ->searchable(),
-                TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable(),
-                TextColumn::make('phone_number')
-                    ->searchable(),
-                TextColumn::make('birthday')
-                    ->date()
+                TextColumn::make('sex_id')
+                    ->label('Sex')
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        1 => 'Male',
+                        2 => 'Female',
+                        default => 'Unknown',
+                    })
                     ->sortable(),
-                TextColumn::make('address')
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -44,12 +39,6 @@ class MembersTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('civil_status_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('sex_id')
-                    ->numeric()
-                    ->sortable(),
             ])
             ->filters([
                 //
