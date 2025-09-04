@@ -11,23 +11,21 @@ class SeniorPastorsSeeder extends Seeder
     {
         $pastors = [
             [
-                'first_name' => 'Oriel',
+                'first_name' => 'Bishop Oriel',
                 'middle_name' => null,
                 'last_name' => 'Ballano',
                 'email' => 'oriel.ballano@example.com',
                 'phone_number' => null,
                 'birthday' => null,
-                'civil_status' => null,
                 'address' => null,
             ],
             [
-                'first_name' => 'Geraldine',
+                'first_name' => 'Pastora Geraldine',
                 'middle_name' => null,
                 'last_name' => 'Ballano',
                 'email' => 'geraldine.ballano@example.com',
                 'phone_number' => null,
                 'birthday' => null,
-                'civil_status' => null,
                 'address' => null,
             ],
         ];
