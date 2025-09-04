@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasCellGroups;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class G12Leader extends Model
 {
+    use HasCellGroups;
+
     protected $table = 'g12_leaders';
     
     protected $fillable = ['member_id'];
@@ -21,8 +24,9 @@ class G12Leader extends Model
     {
         return $this->morphMany(Member::class, 'leader');
     }
-        public function attenders(): MorphMany
-        {
-            return $this->morphMany(Attender::class, 'leader');
-        }
+
+    public function attenders(): MorphMany
+    {
+        return $this->morphMany(Attender::class, 'leader');
+    }
 }
