@@ -20,11 +20,13 @@ class TrainingTypesSeeder extends Seeder
         ];
 
         foreach ($types as $type) {
-            DB::table('training_types')->insert([
-                'name' => $type,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if (!DB::table('training_types')->where('name', $type)->exists()) {
+                DB::table('training_types')->insert([
+                    'name' => $type,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
     }
 }
