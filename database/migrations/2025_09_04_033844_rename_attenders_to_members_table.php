@@ -11,11 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cell_members', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('member_id')->constrained('members')->onDelete('cascade');
-            $table->timestamps();
-        });
+    Schema::rename('attenders', 'members');
     }
 
     /**
@@ -23,6 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cell_members');
+    Schema::rename('members', 'attenders');
     }
 };
