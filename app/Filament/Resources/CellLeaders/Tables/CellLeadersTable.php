@@ -15,9 +15,10 @@ class CellLeadersTable
     {
         return $table
             ->columns([
-                TextColumn::make('member_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('members.full_name')
+                    ->label('Leader Name')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

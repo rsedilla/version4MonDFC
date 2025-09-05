@@ -21,6 +21,8 @@ class MembersTable
                         'App\\Models\\NetworkLeader' => 'Network Leader',
                         'App\\Models\\G12Leader' => 'G12 Leader',
                         'App\\Models\\CellLeader' => 'Cell Leader',
+                        'App\\Models\\Attender' => 'Attender',
+
                         default => 'Unknown',
                     })
                     ->searchable(),
