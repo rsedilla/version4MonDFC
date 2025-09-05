@@ -16,6 +16,13 @@ class MembersTable
         return $table
             ->columns([
                 TextColumn::make('leader_type')
+                    ->label('Leader Type')
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'App\\Models\\NetworkLeader' => 'Network Leader',
+                        'App\\Models\\G12Leader' => 'G12 Leader',
+                        'App\\Models\\CellLeader' => 'Cell Leader',
+                        default => 'Unknown',
+                    })
                     ->searchable(),
                 TextColumn::make('first_name')
                     ->searchable(),
@@ -23,13 +30,8 @@ class MembersTable
                     ->searchable(),
                 TextColumn::make('last_name')
                     ->searchable(),
-                TextColumn::make('sex_id')
+                TextColumn::make('sex.name')
                     ->label('Sex')
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        1 => 'Male',
-                        2 => 'Female',
-                        default => 'Unknown',
-                    })
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

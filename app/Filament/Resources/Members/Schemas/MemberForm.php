@@ -14,7 +14,14 @@ class MemberForm
             ->components([
                 TextInput::make('leader_id')
                     ->numeric(),
-                TextInput::make('leader_type'),
+                \Filament\Forms\Components\Select::make('leader_type')
+                    ->label('Leader Type')
+                    ->options([
+                        'App\\Models\\NetworkLeader' => 'Network Leader',
+                        'App\\Models\\G12Leader' => 'G12 Leader',
+                        'App\\Models\\CellLeader' => 'Cell Leader',
+                    ])
+                    ->required(),
                 TextInput::make('first_name')
                     ->required(),
                 TextInput::make('middle_name'),
@@ -29,8 +36,10 @@ class MemberForm
                 TextInput::make('address'),
                 TextInput::make('civil_status_id')
                     ->numeric(),
-                TextInput::make('sex_id')
-                    ->numeric(),
+                \Filament\Forms\Components\Select::make('sex_id')
+                    ->label('Sex')
+                    ->relationship('sex', 'name')
+                    ->required(),
             ]);
     }
 }
