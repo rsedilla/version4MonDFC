@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Sex;
+use App\Models\CivilStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Member extends Model
 {
@@ -25,5 +28,12 @@ class Member extends Model
     public function civilStatus()
     {
         return $this->belongsTo(CivilStatus::class);
+    }
+
+    // Accessor for full name
+    public function getFullNameAttribute(): string
+    {
+        $parts = array_filter([$this->first_name, $this->middle_name, $this->last_name]);
+        return implode(' ', $parts);
     }
 }

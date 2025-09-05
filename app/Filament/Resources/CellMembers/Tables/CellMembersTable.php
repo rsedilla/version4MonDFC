@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Filament\Resources\CellMembers\Tables;
+
+use App\Models\CellGroup;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+
+class CellMembersTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('member.first_name')
+                    ->label('First Name')
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('member.last_name')
+                    ->label('Last Name')
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('cellGroup.name')
+                    ->label('Cell Group')
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('joined_date')
+                    ->label('Joined Date')
+                    ->date()
+                    ->sortable(),
+                
+                BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'success' => 'active',
+                        'warning' => 'inactive',
+                        'danger' => 'transferred',
+                    ]),
+                
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->options([
+                        'active' => 'Active',
+                        'inactive' => 'Inactive',
+                        'transferred' => 'Transferred',
+                    ]),
+                
+                SelectFilter::make('cell_group_id')
+                    ->label('Cell Group')
+                    ->options(CellGroup::all()->pluck('name', 'id')),
+            ])
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+}
