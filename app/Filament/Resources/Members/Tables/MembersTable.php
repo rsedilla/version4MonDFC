@@ -20,7 +20,9 @@ class MembersTable
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'App\\Models\\NetworkLeader' => 'Network Leader',
                         'App\\Models\\G12Leader' => 'G12 Leader',
+                        'App\\Models\\SeniorPastor' => 'Senior Pastor',
                         'App\\Models\\CellLeader' => 'Cell Leader',
+                        'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\Attender' => 'Attender',
 
                         default => 'Unknown',

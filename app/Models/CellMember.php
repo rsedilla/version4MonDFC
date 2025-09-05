@@ -9,6 +9,7 @@ class CellMember extends Model
 {
     protected $fillable = [
         'member_id',
+        'attender_id',
         'cell_group_id',
         'joined_date',
         'status',

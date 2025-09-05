@@ -11,6 +11,12 @@ class CellLeader extends Model
     use HasCellGroups;
 
     protected $table = 'cell_leaders';
+    
+    protected $fillable = [
+        'member_id',
+        'user_id',
+        // Add other fields as needed
+    ];
 
     public function members(): MorphMany
     {

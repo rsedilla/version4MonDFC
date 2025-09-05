@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class NetworkLeader extends Model
 {
     protected $table = 'network_leaders';
+    
+    protected $fillable = [
+        'member_id',
+        'user_id',
+    ];
 
     public function members(): MorphMany
     {

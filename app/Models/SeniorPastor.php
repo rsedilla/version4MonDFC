@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class SeniorPastor extends Model
 {
     protected $table = 'senior_pastors';
+    
+    protected $fillable = [
+        'member_id',
+        'user_id',
+    ];
 
     public function members(): MorphMany
     {
