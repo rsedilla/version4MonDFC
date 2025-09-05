@@ -16,4 +16,14 @@ class Member extends Model
     {
         return $this->morphTo();
     }
+
+    public function sex()
+    {
+        return $this->belongsTo(Sex::class);
+    }
+
+    public function civilStatus()
+    {
+        return $this->belongsTo(CivilStatus::class);
+    }
 }
