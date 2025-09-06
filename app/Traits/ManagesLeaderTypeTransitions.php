@@ -48,7 +48,7 @@ trait ManagesLeaderTypeTransitions
     /**
      * Clean up old leader type records
      */
-    private function cleanupLeaderTypeRecord(string $leaderType): void
+    private function cleanupLeaderTypeRecord(?string $leaderType = null): void
     {
         // Always delete from all leader tables for exclusivity
         Attender::where('member_id', $this->id)->delete();

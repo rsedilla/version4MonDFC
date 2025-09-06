@@ -25,7 +25,7 @@ class MembersTable
                         'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\Attender' => 'Attender',
 
-                        default => 'Unknown',
+                        default => 'Unknowns',
                     })
                     ->searchable(),
                 TextColumn::make('first_name')

@@ -43,7 +43,11 @@ class Member extends Model
     private static function cleanupOldLeaderRecords(Member $member): void
     {
         $originalType = $member->getOriginal('leader_type');
-        $member->cleanupLeaderTypeRecord($originalType);
+        
+        // Only cleanup if there was an original leader type (not null for new members)
+        if ($originalType) {
+            $member->cleanupLeaderTypeRecord($originalType);
+        }
     }
 
     /**
