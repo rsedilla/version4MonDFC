@@ -5,16 +5,17 @@ namespace App\Models;
 use App\Models\Sex;
 use App\Models\CivilStatus;
 use App\Traits\ManagesLeaderTypeTransitions;
+use App\Traits\HasDirectLeader;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Member extends Model
 {
-    use ManagesLeaderTypeTransitions;
+    use ManagesLeaderTypeTransitions, HasDirectLeader;
     protected $fillable = [
         'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 'birthday', 'address',
-        'civil_status_id', 'sex_id', 'leader_id', 'leader_type'
+        'civil_status_id', 'sex_id', 'leader_id', 'leader_type', 'member_leader_type'
     ];
 
     /**
@@ -23,15 +24,15 @@ class Member extends Model
     protected static function booted(): void
     {
         static::saved(function (Member $member) {
-            // Handle both new records and updates where leader_type changed
-            if ($member->wasRecentlyCreated || $member->wasChanged('leader_type')) {
+            // Handle both new records and updates where member_leader_type changed
+            if ($member->wasRecentlyCreated || $member->wasChanged('member_leader_type')) {
                 
-                // Clean up old records if leader_type changed (only for updates, not new records)
+                // Clean up old records if member_leader_type changed (only for updates, not new records)
                 if (!$member->wasRecentlyCreated) {
                     static::cleanupOldLeaderRecords($member);
                 }
                 
-                // Create new records based on leader_type
+                // Create new records based on member_leader_type
                 static::createLeaderRecord($member);
             }
         });
@@ -42,7 +43,7 @@ class Member extends Model
      */
     private static function cleanupOldLeaderRecords(Member $member): void
     {
-        $originalType = $member->getOriginal('leader_type');
+        $originalType = $member->getOriginal('member_leader_type');
         
         // Only cleanup if there was an original leader type (not null for new members)
         if ($originalType) {
@@ -51,11 +52,11 @@ class Member extends Model
     }
 
     /**
-     * Create leader record based on member's leader_type
+     * Create leader record based on member's member_leader_type
      */
     private static function createLeaderRecord(Member $member): void
     {
-        $member->createLeaderTypeRecord($member->leader_type);
+        $member->createLeaderTypeRecord($member->member_leader_type);
     }
 
     public function leader(): MorphTo

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Members\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -12,19 +13,17 @@ class MemberForm
     {
         return $schema
             ->components([
-                TextInput::make('leader_id')
-                    ->numeric(),
-                \Filament\Forms\Components\Select::make('leader_type')
-                    ->label('Leader Type')
+                Select::make('member_leader_type')
+                    ->label('Member Type')
                     ->options([
                         'App\\Models\\Attender' => 'Attender',
                         'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\CellLeader' => 'Cell Leader',
                         'App\\Models\\G12Leader' => 'G12 Leader',
                         'App\\Models\\NetworkLeader' => 'Network Leader'
-                        
                     ])
                     ->required(),
+                
                 TextInput::make('first_name')
                     ->required(),
                 TextInput::make('middle_name'),
@@ -37,11 +36,11 @@ class MemberForm
                     ->tel(),
                 DatePicker::make('birthday'),
                 TextInput::make('address'),
-                \Filament\Forms\Components\Select::make('civil_status_id')
+                Select::make('civil_status_id')
                     ->label('Civil Status')
                     ->relationship('civilStatus', 'name')
                     ->required(),
-                \Filament\Forms\Components\Select::make('sex_id')
+                Select::make('sex_id')
                     ->label('Sex')
                     ->relationship('sex', 'name')
                     ->required(),

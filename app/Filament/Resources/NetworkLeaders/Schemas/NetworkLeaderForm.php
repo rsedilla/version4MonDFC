@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\G12Leaders\Schemas;
+namespace App\Filament\Resources\NetworkLeaders\Schemas;
 
 use App\Models\Member;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
-class G12LeaderForm
+class NetworkLeaderForm
 {
     public static function configure(Schema $schema): Schema
     {

@@ -14,6 +14,11 @@ class SeniorPastor extends Model
         'user_id',
     ];
 
+    public function member()
+    {
+        return $this->belongsTo(Member::class);
+    }
+
     public function members(): MorphMany
     {
         return $this->morphMany(Member::class, 'leader');

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Members\Tables;
 
+use App\Filament\Helpers\DirectLeaderActionHelper;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -15,8 +16,8 @@ class MembersTable
     {
         return $table
             ->columns([
-                TextColumn::make('leader_type')
-                    ->label('Leader Type')
+                TextColumn::make('member_leader_type')
+                    ->label('Member Type')
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'App\\Models\\NetworkLeader' => 'Network Leader',
                         'App\\Models\\G12Leader' => 'G12 Leader',
@@ -25,7 +26,26 @@ class MembersTable
                         'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\Attender' => 'Attender',
 
-                        default => 'Unknowns',
+                        default => 'Unknown',
+                    })
+                    ->searchable(),
+                    
+                TextColumn::make('directLeader.member.full_name')
+                    ->label('Direct Leader')
+                    ->formatStateUsing(function ($state, $record) {
+                        if (!$record->leader_type || !$record->leader_id || !$state) {
+                            return 'None assigned';
+                        }
+                        
+                        $leaderTypeLabel = match ($record->leader_type) {
+                            'App\\Models\\NetworkLeader' => 'Network Leader',
+                            'App\\Models\\G12Leader' => 'G12 Leader',
+                            'App\\Models\\SeniorPastor' => 'Senior Pastor',
+                            'App\\Models\\CellLeader' => 'Cell Leader',
+                            default => 'Leader',
+                        };
+                        
+                        return $leaderTypeLabel . ': ' . $state;
                     })
                     ->searchable(),
                 TextColumn::make('first_name')
@@ -52,10 +72,12 @@ class MembersTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                DirectLeaderActionHelper::makeAssignDirectLeaderAction(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    DirectLeaderActionHelper::makeBulkAssignDirectLeaderAction(),
                 ]),
             ]);
     }

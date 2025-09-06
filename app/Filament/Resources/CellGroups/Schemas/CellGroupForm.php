@@ -16,11 +16,7 @@ class CellGroupForm
                     ->numeric(),
                 TextInput::make('name')
                     ->required(),
-                TextInput::make('leader_id')
-                    ->required()
-                    ->numeric(),
-                TextInput::make('leader_type')
-                    ->required(),
+                
                 Textarea::make('description')
                     ->columnSpanFull(),
             ]);
