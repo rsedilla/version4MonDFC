@@ -88,7 +88,7 @@ class Member extends Model
     public function trainingTypes(): BelongsToMany
     {
         return $this->belongsToMany(TrainingType::class, 'member_training_type')
-                    ->withPivot('status')
+                    ->withPivot('training_status_id')
                     ->withTimestamps();
     }
 }
