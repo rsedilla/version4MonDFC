@@ -37,15 +37,12 @@ class MembersTable
                             return 'None assigned';
                         }
                         
-                        $leaderTypeLabel = match ($record->leader_type) {
-                            'App\\Models\\NetworkLeader' => 'Network Leader',
-                            'App\\Models\\G12Leader' => 'G12 Leader',
-                            'App\\Models\\SeniorPastor' => 'Senior Pastor',
-                            'App\\Models\\CellLeader' => 'Cell Leader',
-                            default => 'Leader',
-                        };
-                        
-                        return $leaderTypeLabel . ': ' . $state;
+                        $member = $record->directLeader?->member;
+                        if ($member) {
+                            $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
+                            return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
+                        }
+                        return $state;
                     })
                     ->searchable(),
                 TextColumn::make('first_name')

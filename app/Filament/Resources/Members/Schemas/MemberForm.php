@@ -16,11 +16,13 @@ class MemberForm
                 Select::make('member_leader_type')
                     ->label('Member Type')
                     ->options([
+                    
                         'App\\Models\\Attender' => 'Attender',
                         'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\CellLeader' => 'Cell Leader',
                         'App\\Models\\G12Leader' => 'G12 Leader',
-                        'App\\Models\\NetworkLeader' => 'Network Leader'
+                        'App\\Models\\NetworkLeader' => 'Network Leader',
+                        'App\\Models\\SeniorPastor' => 'Senior Pastor'
                     ])
                     ->required(),
                 

@@ -64,8 +64,11 @@ class DirectLeaderActionHelper
             })
             ->fillForm(function ($record) {
                 if ($record->leader_type && $record->leader_id) {
+                    // Find the user-friendly label for the current leader assignment
+                    $options = self::getDirectLeaderOptions();
+                    $key = $record->leader_type . ':' . $record->leader_id;
                     return [
-                        'direct_leader' => $record->leader_type . ':' . $record->leader_id
+                        'direct_leader' => array_key_exists($key, $options) ? $key : ''
                     ];
                 }
                 return [];
@@ -123,35 +126,28 @@ class DirectLeaderActionHelper
      */
     public static function getDirectLeaderOptions(): array
     {
-        $options = [];
-        
-        // Add empty option to clear assignment
-        $options[''] = 'Remove direct leader';
-        
+    $options = [];
+
         // Get all Cell Leaders
         $cellLeaders = CellLeader::with('member')->get();
         foreach ($cellLeaders as $leader) {
             $options[CellLeader::class . ':' . $leader->id] = 'Cell Leader: ' . ($leader->member->full_name ?? 'Unknown');
         }
-        
         // Get all G12 Leaders
         $g12Leaders = G12Leader::with('member')->get();
         foreach ($g12Leaders as $leader) {
             $options[G12Leader::class . ':' . $leader->id] = 'G12 Leader: ' . ($leader->member->full_name ?? 'Unknown');
         }
-        
         // Get all Network Leaders
         $networkLeaders = NetworkLeader::with('member')->get();
         foreach ($networkLeaders as $leader) {
             $options[NetworkLeader::class . ':' . $leader->id] = 'Network Leader: ' . ($leader->member->full_name ?? 'Unknown');
         }
-        
         // Get all Senior Pastors
         $seniorPastors = SeniorPastor::with('member')->get();
         foreach ($seniorPastors as $leader) {
             $options[SeniorPastor::class . ':' . $leader->id] = 'Senior Pastor: ' . ($leader->member->full_name ?? 'Unknown');
         }
-        
         return $options;
     }
 
