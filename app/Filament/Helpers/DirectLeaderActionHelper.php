@@ -18,7 +18,7 @@ class DirectLeaderActionHelper
     public static function makeAssignDirectLeaderAction(): Action
     {
         return Action::make('assignDirectLeader')
-            ->label('Assign Direct Leader')
+            ->label('Assign Leader')
             ->icon('heroicon-o-user-plus')
             ->color('success')
             ->form([

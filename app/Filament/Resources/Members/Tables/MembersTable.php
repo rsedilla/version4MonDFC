@@ -16,6 +16,23 @@ class MembersTable
     {
         return $table
             ->columns([
+                TextColumn::make('first_name')
+                    ->searchable(),
+                TextColumn::make('last_name')
+                    ->searchable(),
+                TextColumn::make('directLeader.member.full_name')
+                    ->label('Direct Leader')
+                    ->formatStateUsing(function ($state, $record) {
+                        if (!$record->leader_type || !$record->leader_id || !$state) {
+                            return 'None assigned';
+                        }
+                        $member = $record->directLeader?->member;
+                        if ($member) {
+                            $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
+                            return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
+                        }
+                        return $state;
+                    }),
                 TextColumn::make('member_leader_type')
                     ->label('Member Type')
                     ->formatStateUsing(fn ($state) => match ($state) {
@@ -25,28 +42,8 @@ class MembersTable
                         'App\\Models\\CellLeader' => 'Cell Leader',
                         'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\Attender' => 'Attender',
-
                         default => 'Unknown',
                     }),
-                    
-                TextColumn::make('directLeader.member.full_name')
-                    ->label('Direct Leader')
-                    ->formatStateUsing(function ($state, $record) {
-                        if (!$record->leader_type || !$record->leader_id || !$state) {
-                            return 'None assigned';
-                        }
-                        
-                        $member = $record->directLeader?->member;
-                        if ($member) {
-                            $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
-                            return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
-                        }
-                        return $state;
-                    }),
-                TextColumn::make('first_name')
-                    ->searchable(),
-                TextColumn::make('last_name')
-                    ->searchable(),
                 TextColumn::make('sex.name')
                     ->label('Sex')
                     ->sortable(),

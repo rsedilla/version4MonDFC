@@ -11,26 +11,77 @@ class MemberInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('leader_id')
-                    ->numeric(),
-                TextEntry::make('leader_type'),
-                TextEntry::make('first_name'),
-                TextEntry::make('middle_name'),
-                TextEntry::make('last_name'),
+                TextEntry::make('full_name')
+                    ->label('Full Name')
+                    ->size('lg')
+                    ->weight('bold'),
+                
+                TextEntry::make('leader')
+                    ->label('Direct Leader')
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->leader) return 'No direct leader assigned';
+                        
+                        // Get leader name based on leader type
+                        $leaderName = null;
+                        if ($record->leader->member) {
+                            // If leader has a member relationship (SeniorPastor, NetworkLeader, etc.)
+                            $leaderName = $record->leader->member->full_name;
+                        } elseif (method_exists($record->leader, 'getFullNameAttribute')) {
+                            // If leader itself has full_name attribute
+                            $leaderName = $record->leader->full_name;
+                        } elseif (isset($record->leader->name)) {
+                            // If leader has a name field
+                            $leaderName = $record->leader->name;
+                        } else {
+                            $leaderName = 'Unknown';
+                        }
+                        
+                        $leaderRole = match(class_basename($record->leader_type)) {
+                            'SeniorPastor' => 'Senior Pastor',
+                            'NetworkLeader' => 'Network Leader', 
+                            'CellLeader' => 'Cell Leader',
+                            'G12Leader' => 'G12 Leader',
+                            default => 'Leader'
+                        };
+                        
+                        return "{$leaderName} ({$leaderRole})";
+                    })
+                    ->badge()
+                    ->color('primary'),
+                
                 TextEntry::make('email')
-                    ->label('Email address'),
-                TextEntry::make('phone_number'),
+                    ->label('Email Address')
+                    ->icon('heroicon-o-envelope')
+                    ->placeholder('Not provided'),
+                
+                TextEntry::make('phone_number')
+                    ->label('Phone Number')
+                    ->icon('heroicon-o-phone')
+                    ->placeholder('Not provided'),
+                
                 TextEntry::make('birthday')
-                    ->date(),
-                TextEntry::make('address'),
+                    ->label('Birthday')
+                    ->date()
+                    ->icon('heroicon-o-calendar')
+                    ->placeholder('Not provided'),
+                
+                TextEntry::make('address')
+                    ->label('Address')
+                    ->icon('heroicon-o-map-pin')
+                    ->placeholder('Not provided'),
+                
+                TextEntry::make('civilStatus.name')
+                    ->label('Civil Status')
+                    ->placeholder('Not specified'),
+                
+                TextEntry::make('sex.name')
+                    ->label('Gender')
+                    ->placeholder('Not specified'),
+                
                 TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
-                    ->dateTime(),
-                TextEntry::make('civil_status_id')
-                    ->numeric(),
-                TextEntry::make('sex_id')
-                    ->numeric(),
+                    ->label('Member Since')
+                    ->date()
+                    ->color('gray'),
             ]);
     }
 }
