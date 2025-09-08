@@ -27,8 +27,7 @@ class MembersTable
                         'App\\Models\\Attender' => 'Attender',
 
                         default => 'Unknown',
-                    })
-                    ->searchable(),
+                    }),
                     
                 TextColumn::make('directLeader.member.full_name')
                     ->label('Direct Leader')
@@ -43,11 +42,8 @@ class MembersTable
                             return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
                         }
                         return $state;
-                    })
-                    ->searchable(),
+                    }),
                 TextColumn::make('first_name')
-                    ->searchable(),
-                TextColumn::make('middle_name')
                     ->searchable(),
                 TextColumn::make('last_name')
                     ->searchable(),
