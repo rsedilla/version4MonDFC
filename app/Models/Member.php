@@ -9,6 +9,7 @@ use App\Traits\HasDirectLeader;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Member extends Model
 {
@@ -79,5 +80,15 @@ class Member extends Model
     {
         $parts = array_filter([$this->first_name, $this->middle_name, $this->last_name]);
         return implode(' ', $parts);
+    }
+
+    /**
+     * Get the training types with status for this member.
+     */
+    public function trainingTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(TrainingType::class, 'member_training_type')
+                    ->withPivot('status')
+                    ->withTimestamps();
     }
 }
