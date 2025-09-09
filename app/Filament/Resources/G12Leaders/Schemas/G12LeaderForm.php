@@ -3,24 +3,20 @@
 namespace App\Filament\Resources\G12Leaders\Schemas;
 
 use App\Models\Member;
+use App\Traits\HasMemberSearch;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class G12LeaderForm
 {
+    use HasMemberSearch;
+    
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('member_id')
-                    ->label('Member')
-                    ->options(function () {
-                        return Member::all()->mapWithKeys(function ($member) {
-                            return [$member->id => $member->full_name];
-                        });
-                    })
-                    ->searchable()
+                self::memberSelect()
                     ->required(),
                     
                 TextInput::make('user_id')

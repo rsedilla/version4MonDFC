@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Attenders\Schemas;
 
 use App\Services\ConsolidatorService;
+use App\Traits\HasMemberSearch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -11,6 +12,7 @@ use Filament\Schemas\Schema;
 
 class AttenderForm
 {
+    use HasMemberSearch;
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -33,15 +35,7 @@ class AttenderForm
                     ->formatStateUsing(fn ($record) => $record?->member ? ($record->member->first_name . ' ' . $record->member->last_name) : 'No member selected')
                     ->columnSpan(1),
 
-                Select::make('consolidator_id')
-                    ->label('👨‍🏫 Consolidator')
-                    ->placeholder('Select a consolidator')
-                    ->searchable()
-                    ->options(function () {
-                        $consolidatorService = app(ConsolidatorService::class);
-                        return $consolidatorService->getConsolidatorOptions();
-                    })
-                    ->helperText('Choose the person responsible for nurturing this new believer. Only SOL 1-3 graduates are eligible.')
+                self::consolidatorSelect()
                     ->columnSpan(1),
 
                 // SUYLN Lessons Section Header
@@ -58,82 +52,72 @@ class AttenderForm
                 // SUYLN Lessons - 2 columns x 5 rows
                 DatePicker::make('suyln_lesson_1')
                     ->label('📖 Lesson 1: Foundation of Faith')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Core principles and beliefs. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Core principles and beliefs.')
                     ->native(false),
                 
                 DatePicker::make('suyln_lesson_2')
                     ->label('🙏 Lesson 2: Prayer & Worship')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Spiritual disciplines. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Spiritual disciplines.')
                     ->native(false),
                 
                 DatePicker::make('suyln_lesson_3')
                     ->label('📚 Lesson 3: Bible Study')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Scripture understanding. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Scripture understanding.')
                     ->native(false),
 
                 DatePicker::make('suyln_lesson_4')
                     ->label('💪 Lesson 4: Spiritual Growth')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Personal development. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Personal development.')
                     ->native(false),
                 
                 DatePicker::make('suyln_lesson_5')
                     ->label('🤝 Lesson 5: Fellowship')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Community and relationships. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Community and relationships.')
                     ->native(false),
                 
                 DatePicker::make('suyln_lesson_6')
                     ->label('💝 Lesson 6: Service')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Ministry and giving. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Ministry and giving.')
                     ->native(false),
 
                 DatePicker::make('suyln_lesson_7')
                     ->label('👥 Lesson 7: Leadership')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Leading others. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Leading others.')
                     ->native(false),
                 
                 DatePicker::make('suyln_lesson_8')
                     ->label('📢 Lesson 8: Evangelism')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Sharing the Gospel. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Sharing the Gospel.')
                     ->native(false),
                 
                 DatePicker::make('suyln_lesson_9')
                     ->label('🌱 Lesson 9: Discipleship')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Making disciples. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Making disciples.')
                     ->native(false),
 
                 DatePicker::make('suyln_lesson_10')
                     ->label('🎓 Lesson 10: Graduation')
-                    ->placeholder('📅 Select completion date or click for today')
+                    ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Final assessment and completion. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Final assessment and completion.')
                     ->native(false),
 
                 // Sunday Service Section Header
@@ -149,34 +133,30 @@ class AttenderForm
 
                 DatePicker::make('sunday_service_1')
                     ->label('🙏 Sunday Service 1')
-                    ->placeholder('📅 Select attendance date or click for today')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('First Sunday worship attendance. Click to set to today.')
-                    ->default(now())
+                    ->helperText('First Sunday worship attendance.')
                     ->native(false),
 
                 DatePicker::make('sunday_service_2')
                     ->label('🎵 Sunday Service 2')
-                    ->placeholder('📅 Select attendance date or click for today')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Second Sunday worship attendance. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Second Sunday worship attendance.')
                     ->native(false),
 
                 DatePicker::make('sunday_service_3')
                     ->label('📖 Sunday Service 3')
-                    ->placeholder('📅 Select attendance date or click for today')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Third Sunday worship attendance. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Third Sunday worship attendance.')
                     ->native(false),
 
                 DatePicker::make('sunday_service_4')
                     ->label('🌟 Sunday Service 4')
-                    ->placeholder('📅 Select attendance date or click for today')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Fourth Sunday worship attendance - Milestone! Click to set to today.')
-                    ->default(now())
+                    ->helperText('Fourth Sunday worship attendance - Milestone!')
                     ->native(false),
 
                 // Cell Group Section Header
@@ -192,35 +172,31 @@ class AttenderForm
 
 
                 DatePicker::make('cell_group_1')
-                    ->label('🤝 Cell Group 1')
-                    ->placeholder('📅 Select meeting date or click for today')
+                    ->label('🏠 Cell Group Meeting 1')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('First small group fellowship. Click to set to today.')
-                    ->default(now())
+                    ->helperText('First cell group meeting attendance.')
                     ->native(false),
 
                 DatePicker::make('cell_group_2')
-                    ->label('💬 Cell Group 2')
-                    ->placeholder('📅 Select meeting date or click for today')
+                    ->label('🤝 Cell Group Meeting 2')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Second small group fellowship. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Second cell group meeting attendance.')
                     ->native(false),
 
                 DatePicker::make('cell_group_3')
-                    ->label('🌱 Cell Group 3')
-                    ->placeholder('📅 Select meeting date or click for today')
+                    ->label('💬 Cell Group Meeting 3')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Third small group fellowship. Click to set to today.')
-                    ->default(now())
+                    ->helperText('Third cell group meeting attendance.')
                     ->native(false),
 
                 DatePicker::make('cell_group_4')
-                    ->label('🎯 Cell Group 4')
-                    ->placeholder('📅 Select meeting date or click for today')
+                    ->label('🎯 Cell Group Meeting 4')
+                    ->placeholder('📅 Select attendance date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Fourth small group fellowship - Integration complete! Click to set to today.')
-                    ->default(now())
+                    ->helperText('Fourth cell group meeting - Fully integrated!')
                     ->native(false),
             ])
             ->columns(2);
