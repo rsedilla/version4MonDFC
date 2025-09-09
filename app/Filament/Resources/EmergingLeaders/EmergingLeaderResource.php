@@ -26,7 +26,7 @@ class EmergingLeaderResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    protected static ?string $recordTitleAttribute = 'member.name';
+    protected static ?string $recordTitleAttribute = 'member.first_name';
 
     public static function form(Schema $schema): Schema
     {

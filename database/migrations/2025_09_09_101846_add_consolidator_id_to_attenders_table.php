@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cell_groups', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->unsignedBigInteger('leader_id');
-            $table->string('leader_type');
-            $table->text('description')->nullable();
-            $table->timestamps();
+        Schema::table('attenders', function (Blueprint $table) {
+            //
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cell_groups');
+        Schema::table('attenders', function (Blueprint $table) {
+            //
+        });
     }
 };

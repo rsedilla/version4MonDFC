@@ -12,8 +12,13 @@ class EmergingLeaderInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('member.name')
-                    ->label('Member Name')
+                TextEntry::make('member.first_name')
+                    ->label('First Name')
+                    ->size('lg')
+                    ->weight('bold'),
+                
+                TextEntry::make('member.last_name')
+                    ->label('Last Name')
                     ->size('lg')
                     ->weight('bold'),
                 

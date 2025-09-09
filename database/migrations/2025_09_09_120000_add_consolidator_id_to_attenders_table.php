@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('attenders', function (Blueprint $table) {
-                $table->unsignedBigInteger('leader_id')->nullable()->after('member_id');
-                $table->string('leader_type')->nullable()->after('leader_id');
+            $table->unsignedBigInteger('consolidator_id')->nullable()->after('member_id');
+            $table->foreign('consolidator_id')->references('id')->on('members')->onDelete('set null');
         });
     }
 
@@ -23,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('attenders', function (Blueprint $table) {
-                $table->dropColumn(['leader_id', 'leader_type']);
+            $table->dropForeign(['consolidator_id']);
+            $table->dropColumn('consolidator_id');
         });
     }
 };

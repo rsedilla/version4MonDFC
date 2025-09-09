@@ -10,6 +10,11 @@ class EditAttender extends EditRecord
 {
     protected static string $resource = AttenderResource::class;
 
+    public function getTitle(): string
+    {
+        return $this->getRecord()->member_name;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

@@ -16,8 +16,12 @@ class EmergingLeadersTable
     {
         return $table
             ->columns([
-                TextColumn::make('member.name')
-                    ->label('Member Name')
+                TextColumn::make('member.first_name')
+                    ->label('First Name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('member.last_name')
+                    ->label('Last Name')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('leadership_area')

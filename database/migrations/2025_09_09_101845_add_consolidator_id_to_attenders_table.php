@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('network_leaders', function (Blueprint $table) {
-            $table->unsignedBigInteger('leader_id')->nullable()->after('user_id');
-            $table->string('leader_type')->nullable()->after('leader_id');
+        Schema::table('attenders', function (Blueprint $table) {
+            //
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('network_leaders', function (Blueprint $table) {
-            $table->dropColumn(['leader_id', 'leader_type']);
+        Schema::table('attenders', function (Blueprint $table) {
+            //
         });
     }
 };

@@ -16,9 +16,10 @@ class EmergingLeaderForm
         return $schema
             ->components([
                 Select::make('member_id')
-                    ->relationship('member', 'name')
+                    ->relationship('member', 'first_name')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->first_name . ' ' . $record->last_name)
+                    ->searchable(['first_name', 'last_name'])
                     ->label('Member')
-                    ->searchable()
                     ->preload()
                     ->required(),
                 TextInput::make('leadership_area')
