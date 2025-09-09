@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\G12Leaders\Schemas;
 
 use App\Models\Member;
+use App\Rules\UniqueMemberAssignment;
 use App\Traits\HasMemberSearch;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,6 +18,9 @@ class G12LeaderForm
         return $schema
             ->components([
                 self::memberSelect()
+                    ->rules([
+                        fn ($record) => new UniqueMemberAssignment('G12 Leaders', $record)
+                    ])
                     ->required(),
                     
                 TextInput::make('user_id')

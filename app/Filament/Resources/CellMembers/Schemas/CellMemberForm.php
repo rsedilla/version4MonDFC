@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CellMembers\Schemas;
 
 use App\Models\CellGroup;
 use App\Models\Member;
+use App\Rules\UniqueMemberAssignment;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
@@ -80,6 +81,9 @@ class CellMemberForm
                         $member = Member::select(['first_name', 'last_name'])->find($value);
                         return $member ? $member->first_name . ' ' . $member->last_name : null;
                     })
+                    ->rules([
+                        fn ($record) => new UniqueMemberAssignment('Cell Members', $record)
+                    ])
                     ->required(),
                 
                 Select::make('cell_group_id')

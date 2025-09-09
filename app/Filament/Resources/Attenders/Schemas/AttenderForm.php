@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Attenders\Schemas;
 
+use App\Rules\UniqueMemberAssignment;
 use App\Services\ConsolidatorService;
 use App\Traits\HasMemberSearch;
 use Filament\Forms\Components\DatePicker;
@@ -28,11 +29,12 @@ class AttenderForm
                     ])
                     ->columnSpanFull(),
 
-                TextInput::make('member.first_name')
-                    ->label('Member Name')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->formatStateUsing(fn ($record) => $record?->member ? ($record->member->first_name . ' ' . $record->member->last_name) : 'No member selected')
+                self::memberSelect()
+                    ->label('👤 Select Member')
+                    ->required()
+                    ->rules([
+                        fn ($record) => new UniqueMemberAssignment('Attenders', $record)
+                    ])
                     ->columnSpan(1),
 
                 self::consolidatorSelect()

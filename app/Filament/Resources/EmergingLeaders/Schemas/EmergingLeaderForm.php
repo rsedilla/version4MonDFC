@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmergingLeaders\Schemas;
 
+use App\Rules\UniqueMemberAssignment;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -21,6 +22,9 @@ class EmergingLeaderForm
                     ->searchable(['first_name', 'last_name'])
                     ->label('Member')
                     ->preload()
+                    ->rules([
+                        fn ($record) => new UniqueMemberAssignment('Emerging Leaders', $record)
+                    ])
                     ->required(),
                 TextInput::make('leadership_area')
                     ->label('Leadership Area')

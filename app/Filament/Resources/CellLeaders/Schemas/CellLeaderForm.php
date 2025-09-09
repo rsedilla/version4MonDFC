@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CellLeaders\Schemas;
 
 use App\Models\Member;
+use App\Rules\UniqueMemberAssignment;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -79,6 +80,9 @@ class CellLeaderForm
                         $member = Member::select(['first_name', 'last_name'])->find($value);
                         return $member ? $member->first_name . ' ' . $member->last_name : null;
                     })
+                    ->rules([
+                        fn ($record) => new UniqueMemberAssignment('Cell Leaders', $record)
+                    ])
                     ->required(),
                     
                 TextInput::make('user_id')
