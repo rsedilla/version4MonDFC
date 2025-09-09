@@ -20,6 +20,24 @@ class MembersTable
                     ->searchable(),
                 TextColumn::make('last_name')
                     ->searchable(),
+                    TextColumn::make('trainingTypes.name')
+                        ->label('Training')
+                        ->getStateUsing(fn($record) => $record->trainingTypes?->pluck('name')->join(', '))
+                        ->placeholder('None')
+                        ->badge()
+                        ->color('info'),
+                    TextColumn::make('trainingTypes.pivot.training_status_id')
+                        ->label('Status')
+                        ->getStateUsing(function($record) {
+                            return $record->trainingTypes?->map(function($trainingType) {
+                                $statusId = $trainingType->pivot->training_status_id;
+                                $status = \App\Models\TrainingStatus::find($statusId);
+                                return $status ? $status->name : 'Unknown';
+                            })->join(', ');
+                        })
+                        ->placeholder('No status')
+                        ->badge()
+                        ->color(fn($state) => str_contains($state, 'Graduate') ? 'info' : (str_contains($state, 'Enrolled') ? 'success' : 'gray')),
                 TextColumn::make('directLeader.member.full_name')
                     ->label('Direct Leader')
                     ->formatStateUsing(function ($state, $record) {
@@ -44,9 +62,6 @@ class MembersTable
                         'App\\Models\\Attender' => 'Attender',
                         default => 'Unknown',
                     }),
-                TextColumn::make('sex.name')
-                    ->label('Sex')
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
