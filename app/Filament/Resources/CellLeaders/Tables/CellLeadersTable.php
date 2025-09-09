@@ -18,7 +18,18 @@ class CellLeadersTable
                 TextColumn::make('members.full_name')
                     ->label('Leader Name')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable(query: function ($query, $search) {
+                        return $query->whereExists(function ($query) use ($search) {
+                            $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                                  ->from('members')
+                                  ->whereColumn('members.id', 'cell_leaders.member_id')
+                                  ->where(function ($query) use ($search) {
+                                      $query->where('first_name', 'like', "%{$search}%")
+                                            ->orWhere('last_name', 'like', "%{$search}%")
+                                            ->orWhere('middle_name', 'like', "%{$search}%");
+                                  });
+                        });
+                    }),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

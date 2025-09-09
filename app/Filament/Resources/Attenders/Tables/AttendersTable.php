@@ -7,6 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class AttendersTable
 {
@@ -25,7 +26,18 @@ class AttendersTable
 
                 TextColumn::make('consolidator.full_name')
                     ->label('Consolidator')
-                    ->searchable(['consolidator.first_name', 'consolidator.last_name'])
+                    ->searchable(query: function ($query, $search) {
+                        return $query->whereExists(function ($query) use ($search) {
+                            $query->select(DB::raw(1))
+                                  ->from('members')
+                                  ->whereColumn('members.id', 'attenders.consolidator_id')
+                                  ->where(function ($query) use ($search) {
+                                      $query->where('first_name', 'like', "%{$search}%")
+                                            ->orWhere('last_name', 'like', "%{$search}%")
+                                            ->orWhere('middle_name', 'like', "%{$search}%");
+                                  });
+                        });
+                    })
                     ->sortable()
                     ->placeholder('Not assigned')
                     ->badge()

@@ -17,9 +17,25 @@ class MembersTable
         return $table
             ->columns([
                 TextColumn::make('first_name')
-                    ->searchable(),
+                    ->label('First Name')
+                    ->searchable(query: function ($query, $search) {
+                        return $query->where(function ($query) use ($search) {
+                            $query->where('first_name', 'like', "%{$search}%")
+                                  ->orWhere('last_name', 'like', "%{$search}%")
+                                  ->orWhere('middle_name', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(),
                 TextColumn::make('last_name')
-                    ->searchable(),
+                    ->label('Last Name')
+                    ->searchable(query: function ($query, $search) {
+                        return $query->where(function ($query) use ($search) {
+                            $query->where('last_name', 'like', "%{$search}%")
+                                  ->orWhere('first_name', 'like', "%{$search}%")
+                                  ->orWhere('middle_name', 'like', "%{$search}%");
+                        });
+                    })
+                    ->sortable(),
                     TextColumn::make('trainingTypes.name')
                         ->label('Training')
                         ->getStateUsing(fn($record) => $record->trainingTypes?->pluck('name')->join(', '))
