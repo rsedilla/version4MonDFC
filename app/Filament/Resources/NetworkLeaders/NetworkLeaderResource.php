@@ -23,7 +23,7 @@ class NetworkLeaderResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'member.full_name';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema
     {

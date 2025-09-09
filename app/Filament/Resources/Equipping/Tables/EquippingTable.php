@@ -20,7 +20,7 @@ class EquippingTable
             ->columns([
                 TextColumn::make('member.full_name')
                     ->label('Member')
-                    ->searchable()
+                    ->searchable(['first_name', 'last_name'])
                     ->sortable(),
                 
                 TextColumn::make('member.directLeader.member.full_name')
@@ -36,8 +36,8 @@ class EquippingTable
                         }
                         return 'None assigned';
                     })
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(false)
+                    ->sortable(false),
                 
                 TextColumn::make('trainingType.name')
                     ->label('Training Type')

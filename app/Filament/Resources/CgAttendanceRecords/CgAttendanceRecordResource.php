@@ -26,7 +26,7 @@ class CgAttendanceRecordResource extends Resource
 
     protected static ?string $navigationLabel = 'Cell Group Attendance';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 9;
 
     public static function form(Schema $schema): Schema
     {
