@@ -15,12 +15,12 @@ class AttendersTable
     {
         return $table
             ->columns([
-                TextColumn::make('member.last_name')
-                    ->label('Last Name')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('member.first_name')
                     ->label('First Name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('member.last_name')
+                    ->label('Last Name')
                     ->searchable()
                     ->sortable(),
 
