@@ -50,74 +50,73 @@ class AttenderForm
                     ->columnSpanFull(),
 
                 // SUYLN Lessons - 2 columns x 5 rows
-                DatePicker::make('suyln_lesson_1')
-                    ->label('📖 Lesson 1: Foundation of Faith')
+                DatePicker::make('Suynl_lesson_1')
+                    ->label('📖 Lesson 1: Salvation')
                     ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Core principles and beliefs.')
+                    ->helperText('Salvation')
                     ->native(false),
                 
-                DatePicker::make('suyln_lesson_2')
-                    ->label('🙏 Lesson 2: Prayer & Worship')
+                DatePicker::make('Suynl_lesson_2')
+                    ->label('🙏 Lesson 2: Repentance')
                     ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Spiritual disciplines.')
+                    ->helperText('Repentance')
                     ->native(false),
-                
-                DatePicker::make('suyln_lesson_3')
-                    ->label('📚 Lesson 3: Bible Study')
+                DatePicker::make('Suynl_lesson_3')
+                    ->label('📚 Lesson 3: Lordship')
                     ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Scripture understanding.')
+                    ->helperText('Lordship')
                     ->native(false),
 
-                DatePicker::make('suyln_lesson_4')
-                    ->label('💪 Lesson 4: Spiritual Growth')
+                DatePicker::make('Suynl_lesson_4')
+                    ->label('💪 Lesson 4: Forgiveness')
                     ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Personal development.')
-                    ->native(false),
-                
-                DatePicker::make('suyln_lesson_5')
-                    ->label('🤝 Lesson 5: Fellowship')
-                    ->placeholder('📅 Select completion date')
-                    ->displayFormat('F j, Y')
-                    ->helperText('Community and relationships.')
-                    ->native(false),
-                
-                DatePicker::make('suyln_lesson_6')
-                    ->label('💝 Lesson 6: Service')
-                    ->placeholder('📅 Select completion date')
-                    ->displayFormat('F j, Y')
-                    ->helperText('Ministry and giving.')
+                    ->helperText('Forgiveness')
                     ->native(false),
 
-                DatePicker::make('suyln_lesson_7')
-                    ->label('👥 Lesson 7: Leadership')
+                DatePicker::make('Suynl_lesson_5')
+                    ->label('🤝 Lesson 5: Lifestyle')
                     ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Leading others.')
-                    ->native(false),
-                
-                DatePicker::make('suyln_lesson_8')
-                    ->label('📢 Lesson 8: Evangelism')
-                    ->placeholder('📅 Select completion date')
-                    ->displayFormat('F j, Y')
-                    ->helperText('Sharing the Gospel.')
-                    ->native(false),
-                
-                DatePicker::make('suyln_lesson_9')
-                    ->label('🌱 Lesson 9: Discipleship')
-                    ->placeholder('📅 Select completion date')
-                    ->displayFormat('F j, Y')
-                    ->helperText('Making disciples.')
+                    ->helperText('Four Greatest Meeting')
                     ->native(false),
 
-                DatePicker::make('suyln_lesson_10')
-                    ->label('🎓 Lesson 10: Graduation')
+                DatePicker::make('Suynl_lesson_6')
+                    ->label('💝 Lesson 6: Devotional Life')
                     ->placeholder('📅 Select completion date')
                     ->displayFormat('F j, Y')
-                    ->helperText('Final assessment and completion.')
+                    ->helperText('Devotional Life')
+                    ->native(false),
+
+                DatePicker::make('Suynl_lesson_7')
+                    ->label('👥 Lesson 7: Prayer')
+                    ->placeholder('📅 Select completion date')
+                    ->displayFormat('F j, Y')
+                    ->helperText('Prayer')
+                    ->native(false),
+
+                DatePicker::make('Suynl_lesson_8')
+                    ->label('📢 Lesson 8: Witnessing')
+                    ->placeholder('📅 Select completion date')
+                    ->displayFormat('F j, Y')
+                    ->helperText('Witnessing')
+                    ->native(false),
+                
+                DatePicker::make('Suynl_lesson_9')
+                    ->label('🌱 Lesson 9: Life of Obedience')
+                    ->placeholder('📅 Select completion date')
+                    ->displayFormat('F j, Y')
+                    ->helperText('Life of Obedience')
+                    ->native(false),
+
+                DatePicker::make('Suynl_lesson_10')
+                    ->label('🎓 Lesson 10: Life in The Church')
+                    ->placeholder('📅 Select completion date')
+                    ->displayFormat('F j, Y')
+                    ->helperText('Life in The Church')
                     ->native(false),
 
                 // Sunday Service Section Header
