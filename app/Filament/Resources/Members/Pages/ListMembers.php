@@ -19,7 +19,7 @@ class ListMembers extends ListRecords
     }
 
     /**
-     * Optimize queries with eager loading
+     * Best Practice: Proper eager loading to prevent N+1 queries
      */
     protected function getTableQuery(): Builder
     {

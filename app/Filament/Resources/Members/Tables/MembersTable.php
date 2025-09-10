@@ -17,13 +17,8 @@ class MembersTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(function ($query) {
-                // Preload the direct leader relationship properly
-                return $query->with(['directLeader.member']);
-            })
+            ->defaultSort('updated_at', 'desc')
             ->searchDebounce('750ms')
-            ->persistSearchInSession()
-            ->poll('30s')
             ->columns([
                 TextColumn::make('first_name')
                     ->label('First Name')
@@ -77,49 +72,14 @@ class MembersTable
                     ->badge()
                     ->color(fn($state) => str_contains($state, 'Graduate') ? 'info' : (str_contains($state, 'Enrolled') ? 'success' : 'gray'))
                     ->toggleable(),
-                TextColumn::make('direct_leader')
+                TextColumn::make('directLeader.member.full_name')
                     ->label('Direct Leader')
-                    ->formatStateUsing(function ($record) {
-                        if (!$record->leader_type || !$record->leader_id) {
-                            return 'None assigned';
-                        }
-                        
-                        // Use preloaded relationship first
-                        if ($record->relationLoaded('directLeader') && $record->directLeader) {
-                            if ($record->directLeader->member) {
-                                $member = $record->directLeader->member;
-                                $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
-                                return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
-                            }
-                        }
-                        
-                        // Fallback to direct query
-                        try {
-                            $leaderClass = $record->leader_type;
-                            if (class_exists($leaderClass)) {
-                                $leader = $leaderClass::with('member')->find($record->leader_id);
-                                if ($leader && $leader->member) {
-                                    $member = $leader->member;
-                                    $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
-                                    return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
-                                }
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Error loading direct leader for member ' . $record->id . ': ' . $e->getMessage());
-                        }
-                        
-                        return 'Error loading leader';
-                    })
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        // Simple search in direct leader names without complex joins
-                        return $query->whereHas('directLeader.member', function (Builder $query) use ($search) {
-                            $query->where(function (Builder $q) use ($search) {
-                                $q->where('first_name', 'like', "%{$search}%")
-                                  ->orWhere('last_name', 'like', "%{$search}%")
-                                  ->orWhere('middle_name', 'like', "%{$search}%");
-                            });
-                        });
-                    }),
+                    ->placeholder('None assigned')
+                    ->formatStateUsing(fn($state) => $state ? "👤 {$state}" : 'None assigned')
+                    ->badge()
+                    ->color(fn($state) => $state ? 'success' : 'gray')
+                    ->searchable(['directLeader.member.first_name', 'directLeader.member.last_name'])
+                    ->sortable(),
                 TextColumn::make('member_leader_type')
                     ->label('Member Type')
                     ->formatStateUsing(fn ($state) => match ($state) {
