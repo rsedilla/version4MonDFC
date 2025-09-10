@@ -42,9 +42,8 @@ trait HasLeaderSearch
                             $set('leader_id', $parsed['leader_id']);
                         }
                     }
-                })
-                ->dehydrated(false), // Don't save this composite field
-
+                }), // Remove dehydrated(false) so the field is submitted
+            
             // Hidden fields to store the actual leader relationship data
             TextInput::make('leader_id')
                 ->hidden()

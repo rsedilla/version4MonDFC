@@ -16,7 +16,7 @@ class CellGroupsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('📝 Group Name')
+                    ->label('📝 Name')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
@@ -31,23 +31,23 @@ class CellGroupsTable
                     ->sortable()
                     ->badge()
                     ->color('primary'),
-                TextColumn::make('leader_type')
-                    ->label('👤 Leader Type')
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'App\\Models\\CellLeader' => 'Cell Leader',
-                        'App\\Models\\G12Leader' => 'G12 Leader',
-                        'App\\Models\\NetworkLeader' => 'Network Leader',
-                        'App\\Models\\SeniorPastor' => 'Senior Pastor',
-                        default => 'Unknown',
-                    })
-                    ->badge()
-                    ->color('success'),
+                TextColumn::make('leader.member.full_name')
+                    ->label('👤 Leader')
+                    ->searchable()
+                    ->sortable()
+                    ->getStateUsing(function ($record) {
+                        if ($record->leader && $record->leader->member) {
+                            return $record->leader->member->full_name;
+                        }
+                        return 'No Leader Assigned';
+                    }),
                 TextColumn::make('info.day')
                     ->label('📅 Meeting Day')
                     ->badge()
                     ->color('warning'),
                 TextColumn::make('info.time')
-                    ->label('🕐 Time'),
+                    ->label('🕐 Time')
+                    ->formatStateUsing(fn ($state) => $state ? $state->format('H:i') : null),
                 TextColumn::make('info.location')
                     ->label('📍 Location')
                     ->limit(30),

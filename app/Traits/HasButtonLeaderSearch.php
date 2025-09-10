@@ -195,6 +195,7 @@ trait HasButtonLeaderSearch
                 })
                 ->searchable()
                 ->placeholder('Search and select a leader')
+                ->required()
                 ->dehydrated(false)
                 ->reactive()
                 ->afterStateUpdated(function (callable $set, $state) {
@@ -209,25 +210,26 @@ trait HasButtonLeaderSearch
                         };
                         
                         if ($leaderType) {
-                            $set('leader_info', $state);
-                            $set('leader_id', $id);
+                            $set('leader_id', (int)$id);
                             $set('leader_type', $leaderType);
                         }
+                    } else {
+                        // Clear fields if no valid selection
+                        $set('leader_id', null);
+                        $set('leader_type', null);
                     }
                 }),
             
-            // Hidden fields to store the actual leader relationship data
-            TextInput::make('leader_info')
-                ->hidden()
-                ->dehydrated(false),
-                
+            // Hidden fields to store the actual leader relationship data (only these will be saved)
             TextInput::make('leader_id')
                 ->hidden()
-                ->dehydrated(),
+                ->dehydrated(true)
+                ->required(),
                 
             TextInput::make('leader_type')
-                ->hidden()
-                ->dehydrated(),
+                ->hidden()  
+                ->dehydrated(true)
+                ->required(),
         ];
     }
 }

@@ -1,0 +1,32 @@
+🔍 Debugging Cell Group Form Structure
+
+✅ Form Components Generated: 3
+
+Component #0:
+  - Class: Filament\Forms\Components\Select
+  - Name: unified_leader_selection
+  - Required: YES
+  - Dehydrated (saved): NO
+
+Component #1:
+  - Class: Filament\Forms\Components\TextInput
+  - Name: leader_id
+  - Required: YES
+  - Dehydrated (saved): NO
+
+Component #2:
+  - Class: Filament\Forms\Components\TextInput
+  - Name: leader_type
+  - Required: YES
+  - Dehydrated (saved): NO
+
+🎯 Testing Options Generation:
+Total options available: 31
+Sample options:
+  CellLeader:3 => Adrian Alejandro (Cell Leader)
+  G12Leader:1 => Bon Ryan Fran (G12 Leader)
+  G12Leader:3 => John Louie  Arenal (G12 Leader)
+  NetworkLeader:1 => Albert Castro (Network Leader)
+  NetworkLeader:2 => Daniel Oriel Ballano (Network Leader)
+
+✅ Debug complete. If options are empty, there might be no leaders in the database.

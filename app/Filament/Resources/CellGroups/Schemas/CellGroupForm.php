@@ -29,7 +29,7 @@ class CellGroupForm
                     ->helperText('Give your cell group a meaningful name that reflects its identity')
                     ->columnSpan(2),
 
-                // Unified Leader Selection - Searches all leader types in one field!
+                // Leader Search - Searches across all three leader tables
                 ...self::leaderSelect('leader_info', '👤 Select Cell Group Leader'),
                 
                 // Cell Group Type
