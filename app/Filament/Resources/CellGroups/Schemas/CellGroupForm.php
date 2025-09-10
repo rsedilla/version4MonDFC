@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CellGroupForm
 {
@@ -19,60 +20,110 @@ class CellGroupForm
     {
         return $schema
             ->components([
-                // Cell Group Information Header
-                TextInput::make('cg_info_header')
-                    ->label('')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->placeholder('👥 CELL GROUP INFORMATION')
-                    ->extraAttributes([
-                        'style' => 'text-align: center; font-weight: bold; background: #f0f9ff; color: #0c4a6e; border: 1px solid #bae6fd; border-radius: 8px; padding: 8px;'
-                    ])
-                    ->columnSpanFull(),
-
-                // Cell Leader Selection
-                Select::make('leader_type')
-                    ->label('👤 Cell Leader Type')
+                // Cell Leader Selection - Optimized with all leader types
+                Select::make('leader_info')
+                    ->label('👤 Select Cell Leader')
                     ->required()
-                    ->reactive()
-                    ->options([
-                        'App\Models\CellLeader' => 'Cell Leader',
-                        'App\Models\G12Leader' => 'G12 Leader',
-                        'App\Models\NetworkLeader' => 'Network Leader',
-                    ])
-                    ->placeholder('Select leader type first')
-                    ->afterStateUpdated(fn (callable $set) => $set('leader_id', null))
-                    ->columnSpan(1),
-
-                Select::make('leader_id')
-                    ->label('Select Leader')
-                    ->required()
-                    ->options(function (callable $get) {
-                        $leaderType = $get('leader_type');
-                        if (!$leaderType) {
-                            return [];
-                        }
-
-                        return match ($leaderType) {
-                            'App\Models\CellLeader' => CellLeader::with('member')
-                                ->get()
-                                ->pluck('member.full_name', 'id')
-                                ->toArray(),
-                            'App\Models\G12Leader' => G12Leader::with('member')
-                                ->get()
-                                ->pluck('member.full_name', 'id')
-                                ->toArray(),
-                            'App\Models\NetworkLeader' => NetworkLeader::with('member')
-                                ->get()
-                                ->pluck('member.full_name', 'id')
-                                ->toArray(),
-                            default => [],
-                        };
-                    })
                     ->searchable()
-                    ->placeholder('Select a leader')
-                    ->visible(fn (callable $get) => filled($get('leader_type')))
-                    ->columnSpan(1),
+                    ->getSearchResultsUsing(function (string $search) {
+                        $results = [];
+                        
+                        // Search Cell Leaders
+                        $cellLeaders = CellLeader::with('member')
+                            ->whereHas('member', function ($query) use ($search) {
+                                $query->where(DB::raw("CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', last_name)"), 'LIKE', "%{$search}%");
+                            })
+                            ->limit(10)
+                            ->get();
+                        
+                        foreach ($cellLeaders as $leader) {
+                            $results["CellLeader:{$leader->id}"] = $leader->member->full_name . ' (Cell Leader)';
+                        }
+                        
+                        // Search G12 Leaders
+                        $g12Leaders = G12Leader::with('member')
+                            ->whereHas('member', function ($query) use ($search) {
+                                $query->where(DB::raw("CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', last_name)"), 'LIKE', "%{$search}%");
+                            })
+                            ->limit(10)
+                            ->get();
+                        
+                        foreach ($g12Leaders as $leader) {
+                            $results["G12Leader:{$leader->id}"] = $leader->member->full_name . ' (G12 Leader)';
+                        }
+                        
+                        // Search Network Leaders
+                        $networkLeaders = NetworkLeader::with('member')
+                            ->whereHas('member', function ($query) use ($search) {
+                                $query->where(DB::raw("CONCAT(first_name, ' ', COALESCE(middle_name, ''), ' ', last_name)"), 'LIKE', "%{$search}%");
+                            })
+                            ->limit(10)
+                            ->get();
+                        
+                        foreach ($networkLeaders as $leader) {
+                            $results["NetworkLeader:{$leader->id}"] = $leader->member->full_name . ' (Network Leader)';
+                        }
+                        
+                        return $results;
+                    })
+                    ->getOptionLabelUsing(function ($value) {
+                        if (!$value || !str_contains($value, ':')) {
+                            return $value;
+                        }
+                        
+                        [$modelType, $id] = explode(':', $value, 2);
+                        
+                        $model = match ($modelType) {
+                            'CellLeader' => CellLeader::with('member')->find($id),
+                            'G12Leader' => G12Leader::with('member')->find($id),
+                            'NetworkLeader' => NetworkLeader::with('member')->find($id),
+                            default => null
+                        };
+                        
+                        if ($model && $model->member) {
+                            $leaderTypeLabel = match ($modelType) {
+                                'CellLeader' => 'Cell Leader',
+                                'G12Leader' => 'G12 Leader', 
+                                'NetworkLeader' => 'Network Leader',
+                                default => 'Leader'
+                            };
+                            return $model->member->full_name . " ({$leaderTypeLabel})";
+                        }
+                        
+                        return $value;
+                    })
+                    ->reactive()
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        if ($state && str_contains($state, ':')) {
+                            [$modelType, $id] = explode(':', $state, 2);
+                            
+                            $leaderType = match ($modelType) {
+                                'CellLeader' => 'App\Models\CellLeader',
+                                'G12Leader' => 'App\Models\G12Leader',
+                                'NetworkLeader' => 'App\Models\NetworkLeader',
+                                default => null
+                            };
+                            
+                            if ($leaderType) {
+                                $set('leader_type', $leaderType);
+                                $set('leader_id', $id);
+                            }
+                        }
+                    })
+                    ->placeholder('Type to search for leaders...')
+                    ->noSearchResultsMessage('No leaders found. Try a different search term.')
+                    ->loadingMessage('Searching leaders...')
+                    ->dehydrated(false)
+                    ->columnSpan(2),
+
+                // Hidden fields to store the actual leader relationship data
+                TextInput::make('leader_id')
+                    ->hidden()
+                    ->dehydrated(),
+                    
+                TextInput::make('leader_type')
+                    ->hidden()
+                    ->dehydrated(),
 
                 // Cell Group Type
                 Select::make('cell_group_type_id')
@@ -81,26 +132,7 @@ class CellGroupForm
                     ->options(CellGroupType::all()->pluck('name', 'id'))
                     ->searchable()
                     ->placeholder('Select group type')
-                    ->columnSpan(1),
-
-                // Cell Group Name
-                TextInput::make('name')
-                    ->label('🏷️ Cell Group Name')
-                    ->required()
-                    ->maxLength(255)
-                    ->placeholder('Enter cell group name')
-                    ->columnSpan(1),
-
-                // Meeting Schedule Header
-                TextInput::make('meeting_schedule_header')
-                    ->label('')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->placeholder('📅 MEETING SCHEDULE')
-                    ->extraAttributes([
-                        'style' => 'text-align: center; font-weight: bold; background: #f0fdf4; color: #14532d; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px;'
-                    ])
-                    ->columnSpanFull(),
+                    ->columnSpan(2),
 
                 // Meeting Day
                 Select::make('info.day')
@@ -118,12 +150,11 @@ class CellGroupForm
                     ->placeholder('Select meeting day')
                     ->columnSpan(1),
 
-                // Meeting Time - Using DateTimePicker with time format
-                DateTimePicker::make('info.time')
+                // Meeting Time - Time only input
+                TextInput::make('info.time')
                     ->label('🕐 Meeting Time')
                     ->required()
-                    ->time()
-                    ->seconds(false)
+                    ->type('time')
                     ->placeholder('Select meeting time')
                     ->columnSpan(1),
 
@@ -134,17 +165,6 @@ class CellGroupForm
                     ->maxLength(255)
                     ->placeholder('Enter meeting location')
                     ->columnSpan(2),
-
-                // Additional Information Header
-                TextInput::make('additional_info_header')
-                    ->label('')
-                    ->disabled()
-                    ->dehydrated(false)
-                    ->placeholder('📝 ADDITIONAL INFORMATION')
-                    ->extraAttributes([
-                        'style' => 'text-align: center; font-weight: bold; background: #fefbeb; color: #92400e; border: 1px solid #fde68a; border-radius: 8px; padding: 8px;'
-                    ])
-                    ->columnSpanFull(),
 
                 // Description
                 Textarea::make('description')
