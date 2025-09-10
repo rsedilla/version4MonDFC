@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\CellGroups\Schemas;
 
 use App\Models\CellGroupType;
+use App\Services\CellGroupIdService;
 use App\Traits\HasLeaderSearch;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Placeholder;
 use Filament\Schemas\Schema;
 
 class CellGroupForm
@@ -18,6 +20,34 @@ class CellGroupForm
     {
         return $schema
             ->components([
+                // Cell Group ID Number - Auto-generated info
+                Placeholder::make('cell_group_id_info')
+                    ->label('🆔 Cell Group ID Number')
+                    ->content(function () {
+                        $availableSlots = CellGroupIdService::getAvailableSlots();
+                        $currentMonth = date('F Y');
+                        $nextId = date('Ym') . str_pad(CellGroupIdService::getCurrentMonthCount() + 1, 3, '0', STR_PAD_LEFT);
+                        
+                        return "
+                            <div class='text-sm'>
+                                <p><strong>Next ID:</strong> {$nextId}</p>
+                                <p><strong>Available slots this month ({$currentMonth}):</strong> {$availableSlots}/300</p>
+                                <p class='text-gray-600 mt-1'>
+                                    <em>The Cell Group ID will be automatically generated when you create this group.</em>
+                                </p>
+                            </div>
+                        ";
+                    })
+                    ->columnSpan(2),
+
+                // Cell Group Name
+                TextInput::make('name')
+                    ->label('📝 Cell Group Name')
+                    ->required()
+                    ->maxLength(255)
+                    ->placeholder('Enter cell group name')
+                    ->columnSpan(2),
+
                 // Optimized leader search using the trait and service
                 ...self::leaderSelect('leader_info', '👤 Select Cell Leader'),
 
