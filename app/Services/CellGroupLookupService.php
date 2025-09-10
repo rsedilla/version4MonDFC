@@ -12,52 +12,15 @@ class CellGroupLookupService
 {
     /**
      * Get cell group details by cell_group_idnum
+     * Updated to use the correct member-leader relationship approach
      * 
      * @param string $idNum
      * @return array|null
      */
     public static function getCellGroupByIdNum(string $idNum): ?array
     {
-        $cellGroupInfo = CellGroupInfo::where('cell_group_idnum', $idNum)
-            ->with([
-                'cellGroup.leader.member', // Get the leader's member details
-                'cellGroup.type',          // Get the cell group type
-                'cellGroup'                // Get the cell group itself
-            ])
-            ->first();
-            
-        if (!$cellGroupInfo) {
-            return null;
-        }
-        
-        $cellGroup = $cellGroupInfo->cellGroup;
-        
-        // Get attendees/members of this cell group
-        $attendees = self::getCellGroupAttendees($cellGroup->id);
-        
-        return [
-            'cell_group_info' => [
-                'id_number' => $cellGroupInfo->cell_group_idnum,
-                'day' => $cellGroupInfo->day,
-                'time' => $cellGroupInfo->time,
-                'location' => $cellGroupInfo->location,
-                'created_at' => $cellGroupInfo->created_at,
-            ],
-            'cell_group' => [
-                'id' => $cellGroup->id,
-                'name' => $cellGroup->name,
-                'description' => $cellGroup->description,
-                'is_active' => $cellGroup->is_active,
-                'type' => $cellGroup->type?->name,
-                'created_at' => $cellGroup->created_at,
-            ],
-            'leader' => self::getLeaderDetails($cellGroup),
-            'attendees' => $attendees,
-            'statistics' => [
-                'total_attendees' => $attendees->count(),
-                'active_attendees' => $attendees->where('status', 'active')->count(),
-            ]
-        ];
+        // Use the new CellGroupMemberService which follows the correct approach
+        return app(CellGroupMemberService::class)::getCellGroupWithMembers($idNum);
     }
     
     /**
@@ -188,49 +151,15 @@ class CellGroupLookupService
     
     /**
      * Search cell groups by attendee name
+     * Updated to use the correct member-leader relationship approach
      * 
      * @param string $attendeeName
      * @return Collection
      */
     public static function searchByAttendeeName(string $attendeeName): Collection
     {
-        // Search in cell_members table
-        $cellGroupIds = DB::table('cell_members')
-            ->join('members', 'cell_members.member_id', '=', 'members.id')
-            ->where(DB::raw("CONCAT(members.first_name, ' ', members.last_name)"), 'LIKE', "%{$attendeeName}%")
-            ->orWhere('members.first_name', 'LIKE', "%{$attendeeName}%")
-            ->orWhere('members.last_name', 'LIKE', "%{$attendeeName}%")
-            ->pluck('cell_members.cell_group_id')
-            ->unique();
-        
-        // Search in cell_group_attendees table
-        $polymorphicGroupIds = DB::table('cell_group_attendees')
-            ->join('members', function($join) {
-                $join->on('cell_group_attendees.attendee_id', '=', 'members.id')
-                     ->where('cell_group_attendees.attendee_type', '=', 'App\\Models\\Member');
-            })
-            ->where(DB::raw("CONCAT(members.first_name, ' ', members.last_name)"), 'LIKE', "%{$attendeeName}%")
-            ->orWhere('members.first_name', 'LIKE', "%{$attendeeName}%")
-            ->orWhere('members.last_name', 'LIKE', "%{$attendeeName}%")
-            ->pluck('cell_group_attendees.cell_group_id')
-            ->unique();
-        
-        $allGroupIds = $cellGroupIds->merge($polymorphicGroupIds)->unique();
-        
-        return CellGroupInfo::whereIn('cell_group_id', $allGroupIds)
-            ->with(['cellGroup.leader.member', 'cellGroup.type'])
-            ->get()
-            ->map(function ($info) {
-                return [
-                    'id_number' => $info->cell_group_idnum,
-                    'cell_group_name' => $info->cellGroup->name,
-                    'leader_name' => $info->cellGroup->leader->member->first_name . ' ' . $info->cellGroup->leader->member->last_name,
-                    'type' => $info->cellGroup->type?->name,
-                    'day' => $info->day,
-                    'time' => $info->time,
-                    'location' => $info->location,
-                ];
-            });
+        // Use the new CellGroupMemberService which follows the correct approach
+        return app(CellGroupMemberService::class)::searchCellGroupsByMemberName($attendeeName);
     }
     
     /**

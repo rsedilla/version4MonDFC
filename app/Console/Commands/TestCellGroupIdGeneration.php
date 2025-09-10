@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\CellGroupIdService;
 use App\Services\CellGroupLookupService;
+use App\Services\CellGroupMemberService;
 use Illuminate\Console\Command;
 
 class TestCellGroupIdGeneration extends Command
@@ -13,14 +14,14 @@ class TestCellGroupIdGeneration extends Command
      *
      * @var string
      */
-    protected $signature = 'test:cell-group-id {action=info : Action to perform (info|lookup|search-leader|search-attendee)} {search? : Search term for lookup operations}';
+    protected $signature = 'test:cell-group-id {action=info : Action to perform (info|lookup|search-leader|search-member|members-by-leader)} {search? : Search term for lookup operations} {--leader-id= : Leader ID for members-by-leader action} {--leader-type= : Leader type for members-by-leader action}';
 
     /**
      * The console description of the console command.
      *
      * @var string
      */
-    protected $description = 'Test cell group ID generation and lookup functionality';
+    protected $description = 'Test cell group ID generation and member lookup functionality (uses leader-member relationships)';
 
     /**
      * Execute the console command.
@@ -51,16 +52,26 @@ class TestCellGroupIdGeneration extends Command
                 $this->searchByLeader($search);
                 break;
                 
-            case 'search-attendee':
+            case 'search-member':
                 if (!$search) {
-                    $this->error('Attendee name is required for search-attendee action');
+                    $this->error('Member name is required for search-member action');
                     return 1;
                 }
-                $this->searchByAttendee($search);
+                $this->searchByMember($search);
+                break;
+                
+            case 'members-by-leader':
+                $leaderId = $this->option('leader-id');
+                $leaderType = $this->option('leader-type');
+                if (!$leaderId || !$leaderType) {
+                    $this->error('Both --leader-id and --leader-type options are required for members-by-leader action');
+                    return 1;
+                }
+                $this->showMembersByLeader((int)$leaderId, $leaderType);
                 break;
                 
             default:
-                $this->error('Invalid action. Use: info, lookup, search-leader, or search-attendee');
+                $this->error('Invalid action. Use: info, lookup, search-leader, search-member, or members-by-leader');
                 return 1;
         }
 
@@ -159,22 +170,22 @@ class TestCellGroupIdGeneration extends Command
             }
             
             // Display attendees
-            if ($result['attendees']->count() > 0) {
-                $this->line("\nAttendees ({$result['statistics']['total_attendees']} total):");
-                $attendeesData = $result['attendees']->map(function ($attendee) {
+            if ($result['members']->count() > 0) {
+                $this->line("\nMembers ({$result['statistics']['total_members']} total):");
+                $membersData = $result['members']->map(function ($member) {
                     return [
-                        $attendee['name'],
-                        $attendee['type'],
-                        $attendee['status'] ?? 'N/A',
-                        $attendee['joined_date'] ?? 'N/A',
+                        $member['name'],
+                        $member['member_leader_type'] ?? 'N/A',
+                        $member['civil_status'] ?? 'N/A',
+                        $member['email'] ?? 'N/A',
                     ];
                 })->toArray();
                 
                 $this->table([
-                    'Name', 'Type', 'Status', 'Joined Date'
-                ], $attendeesData);
+                    'Name', 'Member Type', 'Civil Status', 'Email'
+                ], $membersData);
             } else {
-                $this->line("\nNo attendees found");
+                $this->line("\nNo members found");
             }
             
         } catch (\Exception $e) {
@@ -218,16 +229,16 @@ class TestCellGroupIdGeneration extends Command
         }
     }
 
-    private function searchByAttendee(string $attendeeName)
+    private function searchByMember(string $memberName)
     {
-        $this->info("Searching cell groups by attendee: {$attendeeName}");
-        $this->line('=============================================');
+        $this->info("Searching cell groups by member: {$memberName}");
+        $this->line('===========================================');
         
         try {
-            $results = CellGroupLookupService::searchByAttendeeName($attendeeName);
+            $results = CellGroupLookupService::searchByAttendeeName($memberName);
             
             if ($results->count() === 0) {
-                $this->warn('No cell groups found for this attendee');
+                $this->warn('No cell groups found for this member');
                 return;
             }
             
@@ -237,6 +248,7 @@ class TestCellGroupIdGeneration extends Command
                 return [
                     $group['id_number'],
                     $group['cell_group_name'],
+                    $group['member_name'],
                     $group['leader_name'],
                     $group['type'],
                     $group['day'],
@@ -246,8 +258,66 @@ class TestCellGroupIdGeneration extends Command
             })->toArray();
             
             $this->table([
-                'ID Number', 'Group Name', 'Leader', 'Type', 'Day', 'Time', 'Location'
+                'ID Number', 'Group Name', 'Member', 'Leader', 'Type', 'Day', 'Time', 'Location'
             ], $tableData);
+            
+        } catch (\Exception $e) {
+            $this->error('Error: ' . $e->getMessage());
+        }
+    }
+
+    private function showMembersByLeader(int $leaderId, string $leaderType)
+    {
+        $this->info("Showing members under leader ID {$leaderId} (Type: {$leaderType})");
+        $this->line('================================================================');
+        
+        try {
+            $members = CellGroupMemberService::getMembersByLeader($leaderId, $leaderType);
+            
+            if ($members->count() === 0) {
+                $this->warn('No members found under this leader');
+                return;
+            }
+            
+            $this->line("Found {$members->count()} member(s):");
+            
+            $tableData = $members->map(function ($member) {
+                return [
+                    $member->full_name,
+                    $member->email,
+                    $member->phone_number,
+                    $member->member_leader_type ?? 'N/A',
+                    $member->civilStatus?->name ?? 'N/A',
+                    $member->sex?->name ?? 'N/A',
+                ];
+            })->toArray();
+            
+            $this->table([
+                'Name', 'Email', 'Phone', 'Member Type', 'Civil Status', 'Sex'
+            ], $tableData);
+            
+            // Also show if this leader has any cell groups assigned
+            $cellGroups = CellGroupMemberService::getCellGroupsByLeader($leaderId, $leaderType);
+            if ($cellGroups->count() > 0) {
+                $this->line("\nCell Groups assigned to this leader:");
+                $groupData = $cellGroups->map(function ($group) {
+                    return [
+                        $group['id_number'],
+                        $group['name'],
+                        $group['type'],
+                        $group['day'],
+                        $group['time'],
+                        $group['location'],
+                        $group['is_active'] ? 'Yes' : 'No',
+                    ];
+                })->toArray();
+                
+                $this->table([
+                    'ID Number', 'Group Name', 'Type', 'Day', 'Time', 'Location', 'Active'
+                ], $groupData);
+            } else {
+                $this->line("\nNo cell groups assigned to this leader yet.");
+            }
             
         } catch (\Exception $e) {
             $this->error('Error: ' . $e->getMessage());
