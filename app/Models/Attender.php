@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\AttenderProgressCalculation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Attender extends Model
 {
+    use AttenderProgressCalculation;
     protected $fillable = [
         'member_id',
         'consolidator_id',

@@ -18,54 +18,75 @@ class MembersTable
             ->columns([
                 TextColumn::make('first_name')
                     ->label('First Name')
-                    ->searchable(query: function ($query, $search) {
-                        return $query->where(function ($query) use ($search) {
-                            $query->where('first_name', 'like', "%{$search}%")
-                                  ->orWhere('last_name', 'like', "%{$search}%")
-                                  ->orWhere('middle_name', 'like', "%{$search}%");
-                        });
-                    })
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('last_name')
                     ->label('Last Name')
-                    ->searchable(query: function ($query, $search) {
-                        return $query->where(function ($query) use ($search) {
-                            $query->where('last_name', 'like', "%{$search}%")
-                                  ->orWhere('first_name', 'like', "%{$search}%")
-                                  ->orWhere('middle_name', 'like', "%{$search}%");
-                        });
-                    })
+                    ->searchable()
                     ->sortable(),
-                    TextColumn::make('trainingTypes.name')
-                        ->label('Training')
-                        ->getStateUsing(fn($record) => $record->trainingTypes?->pluck('name')->join(', '))
-                        ->placeholder('None')
-                        ->badge()
-                        ->color('info'),
-                    TextColumn::make('trainingTypes.pivot.training_status_id')
-                        ->label('Status')
-                        ->getStateUsing(function($record) {
-                            return $record->trainingTypes?->map(function($trainingType) {
-                                $statusId = $trainingType->pivot->training_status_id;
+                TextColumn::make('middle_name')
+                    ->label('Middle Name')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('trainingTypes.name')
+                    ->label('Training')
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->relationLoaded('trainingTypes')) {
+                            $record->load('trainingTypes');
+                        }
+                        return $record->trainingTypes->pluck('name')->join(', ') ?: 'None';
+                    })
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(),
+                TextColumn::make('training_status')
+                    ->label('Status')
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->relationLoaded('trainingTypes')) {
+                            $record->load(['trainingTypes' => function ($query) {
+                                $query->with('pivot');
+                            }]);
+                        }
+                        
+                        $statuses = $record->trainingTypes->map(function ($trainingType) {
+                            $statusId = $trainingType->pivot->training_status_id ?? null;
+                            if ($statusId) {
                                 $status = \App\Models\TrainingStatus::find($statusId);
-                                return $status ? $status->name : 'Unknown';
-                            })->join(', ');
-                        })
-                        ->placeholder('No status')
-                        ->badge()
-                        ->color(fn($state) => str_contains($state, 'Graduate') ? 'info' : (str_contains($state, 'Enrolled') ? 'success' : 'gray')),
-                TextColumn::make('directLeader.member.full_name')
+                                return $status?->name ?? 'Unknown';
+                            }
+                            return 'No status';
+                        })->filter()->unique();
+                        
+                        return $statuses->join(', ') ?: 'No status';
+                    })
+                    ->badge()
+                    ->color(fn($state) => str_contains($state, 'Graduate') ? 'info' : (str_contains($state, 'Enrolled') ? 'success' : 'gray'))
+                    ->toggleable(),
+                TextColumn::make('direct_leader')
                     ->label('Direct Leader')
-                    ->formatStateUsing(function ($state, $record) {
-                        if (!$record->leader_type || !$record->leader_id || !$state) {
+                    ->formatStateUsing(function ($record) {
+                        if (!$record->leader_type || !$record->leader_id) {
                             return 'None assigned';
                         }
+                        
+                        if (!$record->relationLoaded('directLeader')) {
+                            $record->load(['directLeader.member']);
+                        }
+                        
                         $member = $record->directLeader?->member;
                         if ($member) {
                             $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
                             return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
                         }
-                        return $state;
+                        
+                        return 'None assigned';
+                    })
+                    ->searchable(query: function ($query, $search) {
+                        return $query->whereHas('directLeader.member', function ($query) use ($search) {
+                            $query->where('first_name', 'like', "%{$search}%")
+                                  ->orWhere('last_name', 'like', "%{$search}%");
+                        });
                     }),
                 TextColumn::make('member_leader_type')
                     ->label('Member Type')

@@ -6,6 +6,7 @@ use App\Models\Sex;
 use App\Models\CivilStatus;
 use App\Traits\ManagesLeaderTypeTransitions;
 use App\Traits\HasDirectLeader;
+use App\Traits\OptimizedMemberSearch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Member extends Model
 {
-    use ManagesLeaderTypeTransitions, HasDirectLeader;
+    use ManagesLeaderTypeTransitions, HasDirectLeader, OptimizedMemberSearch;
     protected $fillable = [
         'first_name', 'middle_name', 'last_name', 'email', 'phone_number', 'birthday', 'address',
         'civil_status_id', 'sex_id', 'leader_id', 'leader_type', 'member_leader_type'

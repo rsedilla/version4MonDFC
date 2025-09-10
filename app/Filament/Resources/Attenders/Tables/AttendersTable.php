@@ -7,7 +7,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
 
 class AttendersTable
 {
@@ -26,18 +25,7 @@ class AttendersTable
 
                 TextColumn::make('consolidator.full_name')
                     ->label('Consolidator')
-                    ->searchable(query: function ($query, $search) {
-                        return $query->whereExists(function ($query) use ($search) {
-                            $query->select(DB::raw(1))
-                                  ->from('members')
-                                  ->whereColumn('members.id', 'attenders.consolidator_id')
-                                  ->where(function ($query) use ($search) {
-                                      $query->where('first_name', 'like', "%{$search}%")
-                                            ->orWhere('last_name', 'like', "%{$search}%")
-                                            ->orWhere('middle_name', 'like', "%{$search}%");
-                                  });
-                        });
-                    })
+                    ->searchable()
                     ->sortable()
                     ->placeholder('Not assigned')
                     ->badge()
@@ -46,23 +34,9 @@ class AttendersTable
                 // Progress tracking columns
                 TextColumn::make('suyln_progress')
                     ->label('SUYLN')
-                    ->state(function ($record) {
-                        $completed = 0;
-                        for ($i = 1; $i <= 10; $i++) {
-                            if ($record->{"suyln_lesson_$i"}) {
-                                $completed++;
-                            }
-                        }
-                        return "$completed/10";
-                    })
+                    ->getStateUsing(fn($record) => $record->suyln_progress)
                     ->badge()
-                    ->color(fn ($state) => match(true) {
-                        $state === '10/10' => 'success',
-                        (int)explode('/', $state)[0] >= 8 => 'warning',
-                        (int)explode('/', $state)[0] >= 5 => 'info',
-                        (int)explode('/', $state)[0] >= 1 => 'primary',
-                        default => 'gray'
-                    })
+                    ->color(fn($record) => $record->suyln_progress_color)
                     ->icon(fn ($state) => match(true) {
                         $state === '10/10' => 'heroicon-o-trophy',
                         (int)explode('/', $state)[0] >= 8 => 'heroicon-o-star',
@@ -86,23 +60,9 @@ class AttendersTable
 
                 TextColumn::make('dcc_progress')
                     ->label('DCC')
-                    ->state(function ($record) {
-                        $completed = 0;
-                        for ($i = 1; $i <= 4; $i++) {
-                            if ($record->{"sunday_service_$i"}) {
-                                $completed++;
-                            }
-                        }
-                        return "$completed/4";
-                    })
+                    ->getStateUsing(fn($record) => $record->dcc_progress)
                     ->badge()
-                    ->color(fn ($state) => match(true) {
-                        $state === '4/4' => 'success',
-                        (int)explode('/', $state)[0] >= 3 => 'warning',
-                        (int)explode('/', $state)[0] >= 2 => 'info',
-                        (int)explode('/', $state)[0] >= 1 => 'primary',
-                        default => 'gray'
-                    })
+                    ->color(fn($record) => $record->dcc_progress_color)
                     ->icon(fn ($state) => match(true) {
                         $state === '4/4' => 'heroicon-o-check-circle',
                         (int)explode('/', $state)[0] >= 3 => 'heroicon-o-clock',
@@ -119,23 +79,9 @@ class AttendersTable
 
                 TextColumn::make('cg_progress')
                     ->label('CG')
-                    ->state(function ($record) {
-                        $completed = 0;
-                        for ($i = 1; $i <= 4; $i++) {
-                            if ($record->{"cell_group_$i"}) {
-                                $completed++;
-                            }
-                        }
-                        return "$completed/4";
-                    })
+                    ->getStateUsing(fn($record) => $record->cg_progress)
                     ->badge()
-                    ->color(fn ($state) => match(true) {
-                        $state === '4/4' => 'success',
-                        (int)explode('/', $state)[0] >= 3 => 'warning',
-                        (int)explode('/', $state)[0] >= 2 => 'info',
-                        (int)explode('/', $state)[0] >= 1 => 'primary',
-                        default => 'gray'
-                    })
+                    ->color(fn($record) => $record->cg_progress_color)
                     ->icon(fn ($state) => match(true) {
                         $state === '4/4' => 'heroicon-o-user-group',
                         (int)explode('/', $state)[0] >= 3 => 'heroicon-o-users',
@@ -149,6 +95,25 @@ class AttendersTable
                              CASE WHEN cell_group_4 IS NOT NULL THEN 1 ELSE 0 END) as cg_count
                         ')->orderBy('cg_count', $direction);
                     }),
+
+                // Overall progress indicator
+                TextColumn::make('overall_progress')
+                    ->label('Overall')
+                    ->getStateUsing(fn($record) => $record->overall_progress . '%')
+                    ->badge()
+                    ->color(fn($record) => match(true) {
+                        $record->overall_progress >= 90 => 'success',
+                        $record->overall_progress >= 70 => 'warning',
+                        $record->overall_progress >= 50 => 'info',
+                        $record->overall_progress >= 25 => 'primary',
+                        default => 'gray'
+                    })
+                    ->icon(fn($record) => match(true) {
+                        $record->overall_progress === 100 => 'heroicon-o-check-badge',
+                        $record->overall_progress >= 75 => 'heroicon-o-shield-check',
+                        default => null
+                    })
+                    ->toggleable(),
                 TextColumn::make('suyln_lesson_1')
                     ->label('SUYLN L1')
                     ->date()

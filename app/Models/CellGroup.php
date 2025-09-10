@@ -35,6 +35,14 @@ class CellGroup extends Model
     }
 
     /**
+     * Alias for type() relationship for better readability in table columns
+     */
+    public function cellGroupType(): BelongsTo
+    {
+        return $this->type();
+    }
+
+    /**
      * Get the leader of this cell group (polymorphic relationship).
      */
     public function leader()
