@@ -9,12 +9,21 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class MembersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                // Preload the direct leader relationship properly
+                return $query->with(['directLeader.member']);
+            })
+            ->searchDebounce('750ms')
+            ->persistSearchInSession()
+            ->poll('30s')
             ->columns([
                 TextColumn::make('first_name')
                     ->label('First Name')
@@ -39,7 +48,12 @@ class MembersTable
                     })
                     ->badge()
                     ->color('info')
-                    ->toggleable(),
+                    ->toggleable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('trainingTypes', function (Builder $query) use ($search) {
+                            $query->where('name', 'like', "%{$search}%");
+                        });
+                    }),
                 TextColumn::make('training_status')
                     ->label('Status')
                     ->formatStateUsing(function ($record) {
@@ -70,22 +84,40 @@ class MembersTable
                             return 'None assigned';
                         }
                         
-                        if (!$record->relationLoaded('directLeader')) {
-                            $record->load(['directLeader.member']);
+                        // Use preloaded relationship first
+                        if ($record->relationLoaded('directLeader') && $record->directLeader) {
+                            if ($record->directLeader->member) {
+                                $member = $record->directLeader->member;
+                                $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
+                                return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
+                            }
                         }
                         
-                        $member = $record->directLeader?->member;
-                        if ($member) {
-                            $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
-                            return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
+                        // Fallback to direct query
+                        try {
+                            $leaderClass = $record->leader_type;
+                            if (class_exists($leaderClass)) {
+                                $leader = $leaderClass::with('member')->find($record->leader_id);
+                                if ($leader && $leader->member) {
+                                    $member = $leader->member;
+                                    $middleInitial = $member->middle_name ? strtoupper(substr($member->middle_name, 0, 1)) . '.' : '';
+                                    return trim($member->first_name . ' ' . $middleInitial . ' ' . $member->last_name);
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Error loading direct leader for member ' . $record->id . ': ' . $e->getMessage());
                         }
                         
-                        return 'None assigned';
+                        return 'Error loading leader';
                     })
-                    ->searchable(query: function ($query, $search) {
-                        return $query->whereHas('directLeader.member', function ($query) use ($search) {
-                            $query->where('first_name', 'like', "%{$search}%")
-                                  ->orWhere('last_name', 'like', "%{$search}%");
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        // Simple search in direct leader names without complex joins
+                        return $query->whereHas('directLeader.member', function (Builder $query) use ($search) {
+                            $query->where(function (Builder $q) use ($search) {
+                                $q->where('first_name', 'like', "%{$search}%")
+                                  ->orWhere('last_name', 'like', "%{$search}%")
+                                  ->orWhere('middle_name', 'like', "%{$search}%");
+                            });
                         });
                     }),
                 TextColumn::make('member_leader_type')
@@ -98,6 +130,31 @@ class MembersTable
                         'App\\Models\\CellMember' => 'Cell Member',
                         'App\\Models\\Attender' => 'Attender',
                         default => 'Unknown',
+                    })
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        $typeMap = [
+                            'network' => 'App\\Models\\NetworkLeader',
+                            'g12' => 'App\\Models\\G12Leader',
+                            'senior' => 'App\\Models\\SeniorPastor',
+                            'pastor' => 'App\\Models\\SeniorPastor',
+                            'cell' => 'App\\Models\\CellLeader',
+                            'leader' => ['App\\Models\\CellLeader', 'App\\Models\\G12Leader', 'App\\Models\\NetworkLeader'],
+                            'member' => 'App\\Models\\CellMember',
+                            'attender' => 'App\\Models\\Attender',
+                        ];
+                        
+                        $searchLower = strtolower($search);
+                        foreach ($typeMap as $keyword => $types) {
+                            if (str_contains($searchLower, $keyword)) {
+                                if (is_array($types)) {
+                                    return $query->whereIn('member_leader_type', $types);
+                                } else {
+                                    return $query->where('member_leader_type', $types);
+                                }
+                            }
+                        }
+                        
+                        return $query;
                     }),
                 TextColumn::make('created_at')
                     ->dateTime()

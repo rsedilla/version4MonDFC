@@ -39,6 +39,11 @@ class DirectLeaderActionHelper
                     $record->leader_type = $leaderType;
                     $record->save();
                     
+                    // Force refresh the relationship and clear any cached data
+                    $record->refresh();
+                    $record->unsetRelation('directLeader');
+                    $record->load(['directLeader.member']);
+                    
                     // Get leader name for notification
                     $leaderModel = app($leaderType)->find($leaderId);
                     $leaderName = $leaderModel->member->full_name ?? 'Unknown';
@@ -54,6 +59,10 @@ class DirectLeaderActionHelper
                     $record->leader_id = null;
                     $record->leader_type = null;
                     $record->save();
+                    
+                    // Force refresh the relationship
+                    $record->refresh();
+                    $record->unsetRelation('directLeader');
                     
                     Notification::make()
                         ->title('Direct Leader Removed')
