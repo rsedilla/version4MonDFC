@@ -39,4 +39,12 @@ class CellGroup extends Model
     {
         return $this->hasOne(CellGroupInfo::class, 'cell_group_id');
     }
+
+    /**
+     * Get all attendance records for this cell group.
+     */
+    public function attendanceRecords()
+    {
+        return $this->hasMany(CgAttendanceRecord::class, 'cell_group_id');
+    }
 }
