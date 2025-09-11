@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CellGroups\Tables;
 
+use App\Filament\Helpers\CellGroupMemberActionHelper;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -15,24 +16,47 @@ class CellGroupsTable
     {
         return $table
             ->columns([
-                TextColumn::make('cell_group_type_id')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('leader_id')
-                    ->numeric()
+                    ->label('Cell Group Name')
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('leader_type')
-                    ->searchable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
+                
+                TextColumn::make('leader_first_name')
+                    ->label('Leader First Name')
+                    ->getStateUsing(function ($record) {
+                        if ($record->leader_type && $record->leader_id) {
+                            $leaderModel = app($record->leader_type);
+                            $leader = $leaderModel::find($record->leader_id);
+                            return $leader?->member?->first_name ?? 'N/A';
+                        }
+                        return 'N/A';
+                    })
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('leader_last_name')
+                    ->label('Leader Last Name')
+                    ->getStateUsing(function ($record) {
+                        if ($record->leader_type && $record->leader_id) {
+                            $leaderModel = app($record->leader_type);
+                            $leader = $leaderModel::find($record->leader_id);
+                            return $leader?->member?->last_name ?? 'N/A';
+                        }
+                        return 'N/A';
+                    })
+                    ->searchable()
+                    ->sortable(),
+                
+                TextColumn::make('info.day')
+                    ->label('Meeting Day')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->default('Not Set'),
+                
+                TextColumn::make('info.time')
+                    ->label('Meeting Time')
+                    ->time('g:i A')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->default('Not Set'),
             ])
             ->filters([
                 //
@@ -40,10 +64,13 @@ class CellGroupsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
+                CellGroupMemberActionHelper::makeAssignMembersAction(),
+                CellGroupMemberActionHelper::makeViewMembersAction(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    CellGroupMemberActionHelper::makeBulkAssignMembersAction(),
                 ]),
             ]);
     }

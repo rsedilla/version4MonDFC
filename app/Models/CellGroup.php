@@ -20,7 +20,11 @@ class CellGroup extends Model
     // Example: fetch all attendees (members) of this cell group
     public function attendees(): MorphToMany
     {
-        return $this->morphToMany(Member::class, 'attendee', 'cell_group_attendees');
+        return $this->morphedByMany(
+            Member::class,
+            'attendee',
+            'cell_group_attendees'
+        );
     }
 
     public function type(): BelongsTo
